@@ -6,8 +6,16 @@
 #define TOTAL_LEDS 50
 //if you want to turn them on and off as a unit.
 #define LEDS_IN_A_GROUP 2
+//color you want to use when the LED is on
 static const uint32_t onColor = CRGB::Blue;
+//milliseconds led is off when dark led cycling
+#define offChaseDelay 20
+//milliseconds between turning next led on or off
+#define onAndOffDelay 50
+
+//number of times to cycle the entire set with a dark led cycle
 #define cycleOffChaseTimes 10
+
 #define MAX_BRIGHTNESS 255
 
 CRGB leds[TOTAL_LEDS];
@@ -43,8 +51,6 @@ void loop() {
 }
 
 void runCycle(uint32_t onColor, boolean forward) {
-    int onAndOffDelay = 50;
-    int offChaseDelay = 20;
     int increment256Amount = 5;
 
     colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
