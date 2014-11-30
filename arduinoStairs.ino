@@ -26,6 +26,16 @@ CRGB leds[TOTAL_LEDS];
 
 
 void setup() {
+    addFastLEDs();
+}
+
+void loop() {
+    FastLED.clear();
+    FastLED.setBrightness(MAX_BRIGHTNESS);
+    runCycle(onColor, false);
+}
+
+void addFastLEDs(){
     // Uncomment one of the following lines for your leds arrangement.
     // FastLED.addLeds<TM1803, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1804, DATA_PIN, RGB>(leds, TOTAL_LEDS);
@@ -42,22 +52,6 @@ void setup() {
 
     // FastLED.addLeds<SM16716, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
-}
-
-void loop() {
-    FastLED.clear();
-    FastLED.setBrightness(MAX_BRIGHTNESS);
-    runCycle(onColor, false);
-}
-
-void runCycle(uint32_t onColor, boolean forward) {
-    int increment256Amount = 5;
-
-    colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
-    for (int i = 0; i < cycleOffChaseTimes; i++) {
-        colorChase(CRGB::Black, onColor, offChaseDelay, forward, 256);
-    }
-    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
 }
 
 void showGroup(int setsLowestLedNumber, uint32_t color, int faderPercent) {
