@@ -1,3 +1,37 @@
+//int ledPin = 13;                // choose the pin for the LED
+//int inputPin = 2;               // choose the input pin (for PIR sensor)
+//int pirState = LOW;             // we start, assuming no motion detected
+//int val = 0;                    // variable for reading the pin status
+//
+//void setup() {
+//  pinMode(ledPin, OUTPUT);      // declare LED as output
+//  pinMode(inputPin, INPUT);     // declare sensor as input
+//
+//  Serial.begin(9600);
+//}
+//
+//void loop(){
+//  val = digitalRead(inputPin);  // read input value
+//  if (val == HIGH) {            // check if the input is HIGH
+//    digitalWrite(ledPin, HIGH);  // turn LED ON
+//    if (pirState == LOW) {
+//      // we have just turned on
+//      Serial.println("Motion detected!");
+//      // We only want to print on the output change, not state
+//      pirState = HIGH;
+//    }
+//  } else {
+//    digitalWrite(ledPin, LOW); // turn LED OFF
+//    if (pirState == HIGH){
+//      // we have just turned of
+//      Serial.println("Motion ended!");
+//      // We only want to print on the output change, not state
+//      pirState = LOW;
+//    }
+//  }
+//}
+
+
 //https://github.com/FastLED/FastLED
 
 #include "FastLED.h"
@@ -35,6 +69,16 @@ void loop() {
     runCycle(onColor, false);
 }
 
+void runCycle(uint32_t onColor, boolean forward) {
+    int increment256Amount = 5;
+
+    colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
+    for (int i = 0; i < cycleOffChaseTimes; i++) {
+        colorChase(CRGB::Black, onColor, offChaseDelay, forward, 256);
+    }
+    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
+}
+
 void addFastLEDs(){
     // Uncomment one of the following lines for your leds arrangement.
     // FastLED.addLeds<TM1803, DATA_PIN, RGB>(leds, TOTAL_LEDS);
@@ -56,7 +100,7 @@ void addFastLEDs(){
 
 void showGroup(int setsLowestLedNumber, uint32_t color, int faderPercent) {
     for (int group = 0; group < LEDS_IN_A_GROUP; group++) {
-        if (setsLowestLedNumber + group >= 0 && setsLowestLedNumber <= TOTAL_LEDS - 1) {
+        if (setsLowestLedNumber + group >= 0 && setsLowestLedNumber  + group <= TOTAL_LEDS - 1) {
             leds[setsLowestLedNumber + group] = color;
             leds[setsLowestLedNumber + group] %= faderPercent;
         }
