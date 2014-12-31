@@ -1,5 +1,8 @@
-int PIRInputPin = 2;               // choose the input pin (for PIR sensor)
-int pirState = LOW;
+int PIR1InputPin = 2;
+int pir1State = LOW;
+
+int PIR2InputPin = 3;
+int pir2State = LOW;
 
 int val = 0;                    // variable for reading the pin status
 
@@ -28,11 +31,14 @@ static const uint32_t onColor = CRGB::Red;
 CRGB leds[TOTAL_LEDS];
 
 //Which pins in your arduino to talk to the LED strip
-#define DATA_PIN 6
-#define CLOCK_PIN 8
+#define DATA_PIN 6  //white
+#define CLOCK_PIN 8 //green
+//blue ground
+//red 5v
 
 
 void setup() {
+    Serial.begin(9600); 
     pinMode(PIRInputPin, INPUT);
     addFastLEDs();
     FastLED.clear();
@@ -40,24 +46,32 @@ void setup() {
 }
 
 void loop() {
-    val = digitalRead(PIRInputPin);  // read input value
+     val = digitalRead(PIRInputPin);  // read input value
+     pir1State = checkPIR();
+     val = digitalRead(PIRInputPin);  // read input value
+      
+}
+
+int checkPIR(int val, int pirState){
     if (val == HIGH) {            // check if the input is HIGH
+        Serial.println("Motion detected");
         if (pirState == LOW) {
+            Serial.println("LEDs started");
             FastLED.clear();
             FastLED.setBrightness(MAX_BRIGHTNESS);
             runCycle(onColor, false);
-            pirState = HIGH;
+            return HIGH;
         }
     } else {
         if (pirState == HIGH){
             // we have just turned of
             Serial.println("Motion ended!");
             // We only want to print on the output change, not state
-            pirState = LOW;
+            return = LOW;
         }
     }
+    return pirState;
 }
-
 void runCycle(uint32_t onColor, boolean forward) {
     int increment256Amount = 5;
 
