@@ -138,7 +138,7 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
             }
         }
     } else {
-        for (int led_number = TOTAL_LEDS - 1; led_number >= 0; led_number -= LEDS_IN_A_GROUP) {
+        for (int led_number = TOTAL_LEDS ; led_number >= 0; led_number -= LEDS_IN_A_GROUP) {
             for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
                 showGroup(led_number, onColor, faderAmount);
             }
