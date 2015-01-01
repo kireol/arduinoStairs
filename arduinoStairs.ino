@@ -46,7 +46,7 @@ CRGB leds[TOTAL_LEDS];
 
 
 void setup() {
-    Serial.begin(9600); 
+    Serial.begin(9600);
     pinMode(PIR1InputPin, INPUT);
     pinMode(PIR2InputPin, INPUT);
     addFastLEDs();
@@ -55,12 +55,12 @@ void setup() {
 }
 
 void loop() {
-     val1 = digitalRead(PIR1InputPin);
+    val1 = digitalRead(PIR1InputPin);
     Serial.println("Checking PIR1");
-     previousPir1State = checkPIR(val1, previousPir1State, true);
-     val2 = digitalRead(PIR2InputPin);
+    previousPir1State = checkPIR(val1, previousPir1State, true);
+    val2 = digitalRead(PIR2InputPin);
     Serial.println("Checking PIR2");
-     previousPir2State = checkPIR(val2, previousPir2State, false);
+    previousPir2State = checkPIR(val2, previousPir2State, false);
 }
 
 void addFastLEDs(){
@@ -103,10 +103,15 @@ int checkPIR(int pirCurrentValue, int pirPreviousState, int runForward){
 }
 void runCycle(uint32_t onColor, boolean forward) {
     int increment256Amount = 5;
+    //turn strip on
     colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
+
+    //chase with black to give pulse effect
     for (int i = 0; i < cycleOffChaseTimes; i++) {
-        colorChase(CRGB::Black, onColor, offChaseDelay, forward, 256);
+        colorChase(CRGB::Black, onColor, offChaseDelay, forward, MAX_BRIGHTNESS);
     }
+
+    //turn strip off
     colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
     resetPIRStates();
 }
@@ -134,7 +139,7 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
             }
             delay(wait);
             if (onColor != offColor) {
-                showGroup(ledNumber, offColor, 100);
+                showGroup(ledNumber, offColor, MAX_BRIGHTNESS);
             }
         }
     } else {
@@ -144,7 +149,7 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
             }
             delay(wait);
             if (onColor != offColor) {
-                showGroup(led_number, offColor, 100);
+                showGroup(led_number, offColor, MAX_BRIGHTNESS);
             }
         }
     }
