@@ -25,7 +25,7 @@ int val2 = 0;
 //if you want to turn them on and off as a unit.
 #define LEDS_IN_A_GROUP 2
 //color you want to use when the LED is on
-static const uint32_t onColor = CRGB::Red;
+static const uint32_t onColor = 0xF7F76F;
 //milliseconds led is off when dark led cycling
 #define offChaseDelay 20
 //milliseconds between turning next led on or off
