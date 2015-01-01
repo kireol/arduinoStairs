@@ -1,16 +1,24 @@
+//ArduinoStairs
+//
+//Written by: Chris Parent
+//Date:October 1, 2014
+//
+//Uses an Arduino, 2 PIR sensors and set of LED lights.
+//This code was written using WS2801 strand of 50 lights
+//
+//Uses FastLED library to talk to LEDS.
+//https://github.com/FastLED/FastLED
+#include "FastLED.h"
+
 int PIR1InputPin = 2;
-int pir1State = LOW;
+int previousPir1State = LOW;
 
 int PIR2InputPin = 3;
-int pir2State = LOW;
+int previousPir2State = LOW;
 
-int val = 0;                    // variable for reading the pin status
+int val1 = 0;
+int val2 = 0;
 
-
-
-//https://github.com/FastLED/FastLED
-
-#include "FastLED.h"
 
 //Tell it how many leds are in the strip.
 #define TOTAL_LEDS 50
@@ -39,47 +47,20 @@ CRGB leds[TOTAL_LEDS];
 
 void setup() {
     Serial.begin(9600); 
-    pinMode(PIRInputPin, INPUT);
+    pinMode(PIR1InputPin, INPUT);
+    pinMode(PIR2InputPin, INPUT);
     addFastLEDs();
     FastLED.clear();
 
 }
 
 void loop() {
-     val = digitalRead(PIRInputPin);  // read input value
-     pir1State = checkPIR();
-     val = digitalRead(PIRInputPin);  // read input value
-      
-}
-
-int checkPIR(int val, int pirState){
-    if (val == HIGH) {            // check if the input is HIGH
-        Serial.println("Motion detected");
-        if (pirState == LOW) {
-            Serial.println("LEDs started");
-            FastLED.clear();
-            FastLED.setBrightness(MAX_BRIGHTNESS);
-            runCycle(onColor, false);
-            return HIGH;
-        }
-    } else {
-        if (pirState == HIGH){
-            // we have just turned of
-            Serial.println("Motion ended!");
-            // We only want to print on the output change, not state
-            return = LOW;
-        }
-    }
-    return pirState;
-}
-void runCycle(uint32_t onColor, boolean forward) {
-    int increment256Amount = 5;
-
-    colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
-    for (int i = 0; i < cycleOffChaseTimes; i++) {
-        colorChase(CRGB::Black, onColor, offChaseDelay, forward, 256);
-    }
-    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
+     val1 = digitalRead(PIR1InputPin);
+    Serial.println("Checking PIR1");
+     previousPir1State = checkPIR(val1, previousPir1State, true);
+     val2 = digitalRead(PIR2InputPin);
+    Serial.println("Checking PIR2");
+     previousPir2State = checkPIR(val2, previousPir2State, false);
 }
 
 void addFastLEDs(){
@@ -99,6 +80,40 @@ void addFastLEDs(){
 
     // FastLED.addLeds<SM16716, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
+}
+
+int checkPIR(int pirCurrentValue, int pirPreviousState, int runForward){
+    Serial.println("Checking PIR");
+    if (pirCurrentValue == HIGH) {
+        Serial.println("Motion detected");
+        if (pirPreviousState == LOW) {
+            Serial.println("LEDs started");
+            FastLED.clear();
+            FastLED.setBrightness(MAX_BRIGHTNESS);
+            runCycle(onColor, runForward);
+            pirPreviousState = HIGH;
+        }
+    } else {
+        if (pirPreviousState == HIGH){
+            Serial.println("Motion ended!");
+            pirPreviousState = LOW;
+        }
+    }
+    return pirPreviousState;
+}
+void runCycle(uint32_t onColor, boolean forward) {
+    int increment256Amount = 5;
+    colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
+    for (int i = 0; i < cycleOffChaseTimes; i++) {
+        colorChase(CRGB::Black, onColor, offChaseDelay, forward, 256);
+    }
+    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
+    resetPIRStates();
+}
+
+void resetPIRStates(){
+    previousPir1State = LOW;
+    previousPir2State = LOW;
 }
 
 void showGroup(int setsLowestLedNumber, uint32_t color, int faderPercent) {
