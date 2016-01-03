@@ -20,12 +20,15 @@ int val1 = 0;
 int val2 = 0;
 
 
+#define POTENTIOMETER_PIN A0;
+
 //Tell it how many leds are in the strip.
 #define TOTAL_LEDS 50
 //if you want to turn them on and off as a unit.
 #define LEDS_IN_A_GROUP 2
 //color you want to use when the LED is on
-static const uint32_t onColor = 0xF7F76F;
+//static const uint32_t onColor = 0xF7F76F;
+static const uint32_t onColor = CRGB::Red;
 //milliseconds led is off when dark led cycling
 #define offChaseDelay 20
 //milliseconds between turning next led on or off
@@ -39,8 +42,8 @@ static const uint32_t onColor = 0xF7F76F;
 CRGB leds[TOTAL_LEDS];
 
 //Which pins in your arduino to talk to the LED strip
-#define DATA_PIN 6  //white
-#define CLOCK_PIN 8 //green
+#define DATA_PIN 4  //white
+//#define CLOCK_PIN 8 //green
 //blue ground
 //red 5v
 
@@ -49,12 +52,18 @@ void setup() {
     Serial.begin(9600);
     pinMode(PIR1InputPin, INPUT);
     pinMode(PIR2InputPin, INPUT);
+    
+    
     addFastLEDs();
     FastLED.clear();
 
 }
 
 void loop() {
+    int sensorValue = analogRead(A0);
+    Serial.println(sensorValue);
+
+  
     val1 = digitalRead(PIR1InputPin);
     Serial.println("Checking PIR1");
     previousPir1State = checkPIR(val1, previousPir1State, true);
@@ -68,7 +77,7 @@ void addFastLEDs(){
     // FastLED.addLeds<TM1803, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1804, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1809, DATA_PIN, RGB>(leds, TOTAL_LEDS);
-    // FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, TOTAL_LEDS);
+     FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<UCS1903, DATA_PIN, RGB>(leds, TOTAL_LEDS);
@@ -76,7 +85,7 @@ void addFastLEDs(){
     // FastLED.addLeds<SM16716, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, RGB>(leds, TOTAL_LEDS);
 
-    FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
+    //FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
 
     // FastLED.addLeds<SM16716, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
