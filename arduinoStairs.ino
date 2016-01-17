@@ -23,19 +23,19 @@ int val2 = 0;
 #define POTENTIOMETER_PIN A0;
 
 //Tell it how many leds are in the strip.
-#define TOTAL_LEDS 50
+#define TOTAL_LEDS 13
 //if you want to turn them on and off as a unit.
-#define LEDS_IN_A_GROUP 2
+#define LEDS_IN_A_GROUP 1
 //color you want to use when the LED is on
 //static const uint32_t onColor = 0xF7F76F;
-static const uint32_t onColor = CRGB::Red;
+static const uint32_t onColor = CRGB::AliceBlue;
 //milliseconds led is off when dark led cycling
-#define offChaseDelay 20
+#define offChaseDelay 50
 //milliseconds between turning next led on or off
-#define onAndOffDelay 50
+#define onAndOffDelay 75
 
 //number of times to cycle the entire set with a dark led cycle
-#define cycleOffChaseTimes 10
+#define cycleOffChaseTimes 20
 
 #define MAX_BRIGHTNESS 255
 
