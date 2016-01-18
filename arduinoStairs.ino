@@ -29,6 +29,7 @@ int val2 = 0;
 //color you want to use when the LED is on
 //static const uint32_t onColor = 0xF7F76F;
 static const uint32_t onColor = CRGB::AliceBlue;
+static const uint32_t leadColor = CRGB::DeepPink;
 //milliseconds led is off when dark led cycling
 #define offChaseDelay 50
 //milliseconds between turning next led on or off
@@ -43,6 +44,7 @@ CRGB leds[TOTAL_LEDS];
 
 //Which pins in your arduino to talk to the LED strip
 #define DATA_PIN 4  //white
+#define DATA_PIN2 5  //white
 //#define CLOCK_PIN 8 //green
 //blue ground
 //red 5v
@@ -78,6 +80,7 @@ void addFastLEDs(){
     // FastLED.addLeds<TM1804, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1809, DATA_PIN, RGB>(leds, TOTAL_LEDS);
      FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, TOTAL_LEDS);
+     FastLED.addLeds<WS2811, DATA_PIN2, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<UCS1903, DATA_PIN, RGB>(leds, TOTAL_LEDS);
@@ -144,7 +147,12 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
     if (forward) {
         for (int ledNumber = 0; ledNumber < TOTAL_LEDS; ledNumber += LEDS_IN_A_GROUP) {
             for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
-                showGroup(ledNumber, onColor, faderAmount);
+                if(onColor == CRGB::Black){
+                  showGroup(ledNumber, onColor, faderAmount);                                    
+                }else{
+                  showGroup(ledNumber, leadColor, faderAmount);
+                  showGroup(ledNumber-1, onColor, faderAmount);                  
+                }
             }
             delay(wait);
             if (onColor != offColor) {
@@ -154,7 +162,12 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
     } else {
         for (int led_number = TOTAL_LEDS ; led_number >= 0; led_number -= LEDS_IN_A_GROUP) {
             for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
-                showGroup(led_number, onColor, faderAmount);
+                if(onColor == CRGB::Black){
+                  showGroup(led_number, onColor, faderAmount);                  
+                }else{
+                  showGroup(led_number, leadColor, faderAmount);
+                  showGroup(led_number+1, onColor, faderAmount);
+                }
             }
             delay(wait);
             if (onColor != offColor) {
