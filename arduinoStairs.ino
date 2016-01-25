@@ -30,7 +30,7 @@ static const uint32_t leadColor = CRGB::DeepPink;
 #define offChaseDelay 1
 //milliseconds between turning next led on or off
 #define onAndOffDelay 20
-#define PULSEDELAY 5
+#define PULSEDELAY 1
 #define FADEONDELAY 20
 //number of times to cycle the entire set with a dark led cycle
 #define cycleOffChaseTimes 20
@@ -85,13 +85,16 @@ void addFastLEDs() {
 void checkPIR() {
     alarmValueTop = digitalRead(PIR1InputPin);
     alarmValueBottom = digitalRead(PIR2InputPin);
+
     if (alarmValueTop == HIGH && downUp != 2) {
         //    Serial.println("CHECKING PIRS");
         downUp = 1;
+        Serial.println("UP");
         runCycle(onColor, true);
     }
     else if (alarmValueBottom == HIGH && downUp != 1) {
         downUp = 2;
+        Serial.println("DOWN");
         runCycle(onColor, false);
     }
     else {
@@ -141,17 +144,17 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
 }
 
 void fadeAllOn(uint32_t color, boolean forward) {
-    int correctsIfBackward = 0;
     int thisLedBrightness;
 
     int maxStep = 512;
 
     for (int currentStep = 0; currentStep < maxStep; currentStep++) {
         for (int thisLed = 0; thisLed < TOTAL_LEDS; thisLed++) {
+            int ledToChange = thisLed;
             if (!forward) {
-                correctsIfBackward = TOTAL_LEDS - 1 - thisLed;
+                ledToChange = TOTAL_LEDS - 1 - thisLed;
             }
-            leds[thisLed + correctsIfBackward] = color;
+            leds[ledToChange] = color;
             int brightnessToUse = currentStep - (thisLed / TOTAL_LEDS) * currentStep;
             if (brightnessToUse < 0) {
                 brightnessToUse = 0;
@@ -159,7 +162,7 @@ void fadeAllOn(uint32_t color, boolean forward) {
             else if (brightnessToUse > MAX_BRIGHTNESS) {
                 brightnessToUse = MAX_BRIGHTNESS;
             }
-            leds[thisLed + correctsIfBackward] %= brightnessToUse;
+            leds[ledToChange] %= brightnessToUse;
         }
         FastLED.show();
         delay(FADEONDELAY);
