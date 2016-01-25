@@ -11,14 +11,9 @@
 #include "FastLED.h"
 
 int PIR1InputPin = 2;
-int previousPir1State = LOW;
-
 int PIR2InputPin = 3;
-int previousPir2State = LOW;
-
 int val1 = 0;
 int val2 = 0;
-
 
 #define POTENTIOMETER_PIN A0;
 
@@ -28,152 +23,152 @@ int val2 = 0;
 #define LEDS_IN_A_GROUP 1
 //color you want to use when the LED is on
 //static const uint32_t onColor = 0xF7F76F;
-static const uint32_t onColor = CRGB::AliceBlue;
+static const uint32_t onColor = CRGB::Red;
+//AliceBlue;
 static const uint32_t leadColor = CRGB::DeepPink;
 //milliseconds led is off when dark led cycling
-#define offChaseDelay 50
+#define offChaseDelay 1
 //milliseconds between turning next led on or off
-#define onAndOffDelay 75
-
+#define onAndOffDelay 20
+#define PULSEDELAY 5
+#define FADEONDELAY 20
 //number of times to cycle the entire set with a dark led cycle
 #define cycleOffChaseTimes 20
 
 #define MAX_BRIGHTNESS 255
 
 CRGB leds[TOTAL_LEDS];
-
+int colors[TOTAL_LEDS];
 //Which pins in your arduino to talk to the LED strip
 #define DATA_PIN 4  //white
 #define DATA_PIN2 5  //white
 //#define CLOCK_PIN 8 //green
 //blue ground
 //red 5v
-
+int downUp = 0;              // variable to rememer the direction of travel up or down the stairs
+unsigned long timeOut = 60000; // timestamp to remember when the PIR was triggered.
+int alarmValueTop = LOW;    // Variable to hold the PIR status
+int alarmValueBottom = LOW; // Variable to hold the PIR status
 
 void setup() {
     Serial.begin(9600);
     pinMode(PIR1InputPin, INPUT);
     pinMode(PIR2InputPin, INPUT);
-    
-    
+
     addFastLEDs();
     FastLED.clear();
-
+    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, true);
 }
 
 void loop() {
-    int sensorValue = analogRead(A0);
-    Serial.println(sensorValue);
-
-  
-    val1 = digitalRead(PIR1InputPin);
-    Serial.println("Checking PIR1");
-    previousPir1State = checkPIR(val1, previousPir1State, true);
-    val2 = digitalRead(PIR2InputPin);
-    Serial.println("Checking PIR2");
-    previousPir2State = checkPIR(val2, previousPir2State, false);
+    checkPIR();
 }
 
-void addFastLEDs(){
+void addFastLEDs() {
     // Uncomment one of the following lines for your leds arrangement.
     // FastLED.addLeds<TM1803, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1804, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<TM1809, DATA_PIN, RGB>(leds, TOTAL_LEDS);
-     FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, TOTAL_LEDS);
-     FastLED.addLeds<WS2811, DATA_PIN2, RGB>(leds, TOTAL_LEDS);
+    FastLED.addLeds<WS2811, DATA_PIN, RGB>(leds, TOTAL_LEDS);
+    FastLED.addLeds<WS2811, DATA_PIN2, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2812B, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<UCS1903, DATA_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<WS2801, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<SM16716, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, RGB>(leds, TOTAL_LEDS);
-
     //FastLED.addLeds<WS2801, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
-
     // FastLED.addLeds<SM16716, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
     // FastLED.addLeds<LPD8806, DATA_PIN, CLOCK_PIN, RGB>(leds, TOTAL_LEDS);
 }
 
-int checkPIR(int pirCurrentValue, int pirPreviousState, int runForward){
-    Serial.println("Checking PIR");
-    if (pirCurrentValue == HIGH) {
-        Serial.println("Motion detected");
-        if (pirPreviousState == LOW) {
-            Serial.println("LEDs started");
-            FastLED.clear();
-            FastLED.setBrightness(MAX_BRIGHTNESS);
-            runCycle(onColor, runForward);
-            pirPreviousState = HIGH;
-        }
-    } else {
-        if (pirPreviousState == HIGH){
-            Serial.println("Motion ended!");
-            pirPreviousState = LOW;
-        }
+void checkPIR() {
+    alarmValueTop = digitalRead(PIR1InputPin);
+    alarmValueBottom = digitalRead(PIR2InputPin);
+    if (alarmValueTop == HIGH && downUp != 2) {
+        //    Serial.println("CHECKING PIRS");
+        downUp = 1;
+        runCycle(onColor, true);
     }
-    return pirPreviousState;
+    else if (alarmValueBottom == HIGH && downUp != 1) {
+        downUp = 2;
+        runCycle(onColor, false);
+    }
+    else {
+        downUp = 0;
+    }
 }
+
 void runCycle(uint32_t onColor, boolean forward) {
-    int increment256Amount = 5;
+    timeOut = millis();
+    FastLED.clear();
+    FastLED.setBrightness(MAX_BRIGHTNESS);
+
     //turn strip on
-    colorChase(onColor, onColor, onAndOffDelay, forward, increment256Amount);
+    fadeAllOn(onColor, forward);
 
     //chase with black to give pulse effect
     for (int i = 0; i < cycleOffChaseTimes; i++) {
-        colorChase(CRGB::Black, onColor, offChaseDelay, forward, MAX_BRIGHTNESS);
+        colorChase(onColor, onColor, offChaseDelay, forward);
     }
 
     //turn strip off
-    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward, increment256Amount);
-    resetPIRStates();
+    colorChase(CRGB::Black, CRGB::Black, onAndOffDelay, !forward);
 }
 
-void resetPIRStates(){
-    previousPir1State = LOW;
-    previousPir2State = LOW;
-}
+void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forward) {
+    int stepBy = 5;
 
-void showGroup(int setsLowestLedNumber, uint32_t color, int faderPercent) {
-    for (int group = 0; group < LEDS_IN_A_GROUP; group++) {
-        if (setsLowestLedNumber + group >= 0 && setsLowestLedNumber  + group <= TOTAL_LEDS - 1) {
-            leds[setsLowestLedNumber + group] = color;
-            leds[setsLowestLedNumber + group] %= faderPercent;
-        }
-    }
-    FastLED.show();
-}
-
-void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forward, int stepBy) {
     if (forward) {
         for (int ledNumber = 0; ledNumber < TOTAL_LEDS; ledNumber += LEDS_IN_A_GROUP) {
-            for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
-                if(onColor == CRGB::Black){
-                  showGroup(ledNumber, onColor, faderAmount);                                    
-                }else{
-                  showGroup(ledNumber, leadColor, faderAmount);
-                  showGroup(ledNumber-1, onColor, faderAmount);                  
-                }
+            for (int faderAmount = 255; faderAmount >= 0; faderAmount -= stepBy) {
+                showGroup(ledNumber, onColor, faderAmount);
             }
-            delay(wait);
-            if (onColor != offColor) {
-                showGroup(ledNumber, offColor, MAX_BRIGHTNESS);
+            for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
+                showGroup(ledNumber, onColor, faderAmount);
             }
         }
     } else {
-        for (int led_number = TOTAL_LEDS ; led_number >= 0; led_number -= LEDS_IN_A_GROUP) {
-            for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
-                if(onColor == CRGB::Black){
-                  showGroup(led_number, onColor, faderAmount);                  
-                }else{
-                  showGroup(led_number, leadColor, faderAmount);
-                  showGroup(led_number+1, onColor, faderAmount);
-                }
+        for (int ledNumber = TOTAL_LEDS; ledNumber >= 0; ledNumber -= LEDS_IN_A_GROUP) {
+            for (int faderAmount = 255; faderAmount >= 0; faderAmount -= stepBy) {
+                showGroup(ledNumber, onColor, faderAmount);
             }
-            delay(wait);
-            if (onColor != offColor) {
-                showGroup(led_number, offColor, MAX_BRIGHTNESS);
+            for (int faderAmount = 0; faderAmount <= 255; faderAmount += stepBy) {
+                showGroup(ledNumber, onColor, faderAmount);
             }
         }
     }
-    return;
+}
+
+void fadeAllOn(uint32_t color, boolean forward) {
+    int correctsIfBackward = 0;
+    int thisLedBrightness;
+
+    int maxStep = 512;
+
+    for (int currentStep = 0; currentStep < maxStep; currentStep++) {
+        for (int thisLed = 0; thisLed < TOTAL_LEDS; thisLed++) {
+            if (!forward) {
+                correctsIfBackward = TOTAL_LEDS - 1 - thisLed;
+            }
+            leds[thisLed + correctsIfBackward] = color;
+            int brightnessToUse = currentStep - (thisLed / TOTAL_LEDS) * currentStep;
+            if (brightnessToUse < 0) {
+                brightnessToUse = 0;
+            }
+            else if (brightnessToUse > MAX_BRIGHTNESS) {
+                brightnessToUse = MAX_BRIGHTNESS;
+            }
+            leds[thisLed + correctsIfBackward] %= brightnessToUse;
+        }
+        FastLED.show();
+        delay(FADEONDELAY);
+    }
+}
+
+void showGroup(int ledNumber, uint32_t color, int faderPercent) {
+    leds[ledNumber] = color;
+    leds[ledNumber] %= faderPercent;
+    FastLED.show();
+    delay(PULSEDELAY);
 }
