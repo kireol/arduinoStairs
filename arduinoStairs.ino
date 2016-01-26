@@ -23,17 +23,16 @@ int val2 = 0;
 #define LEDS_IN_A_GROUP 1
 //color you want to use when the LED is on
 //static const uint32_t onColor = 0xF7F76F;
-static const uint32_t onColor = CRGB::Red;
-//AliceBlue;
+static const uint32_t onColor = CRGB::AliceBlue;
 static const uint32_t leadColor = CRGB::DeepPink;
 //milliseconds led is off when dark led cycling
 #define offChaseDelay 1
 //milliseconds between turning next led on or off
 #define onAndOffDelay 20
 #define PULSEDELAY 1
-#define FADEONDELAY 20
+#define FADEONDELAY 100
 //number of times to cycle the entire set with a dark led cycle
-#define cycleOffChaseTimes 20
+#define cycleOffChaseTimes 60
 
 #define MAX_BRIGHTNESS 255
 
@@ -146,7 +145,7 @@ void colorChase(uint32_t onColor, uint32_t offColor, uint8_t wait, boolean forwa
 void fadeAllOn(uint32_t color, boolean forward) {
     int thisLedBrightness;
 
-    int maxStep = 512;
+    int maxStep = 256;
 
     for (int currentStep = 0; currentStep < maxStep; currentStep++) {
         for (int thisLed = 0; thisLed < TOTAL_LEDS; thisLed++) {
