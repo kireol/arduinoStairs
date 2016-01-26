@@ -4,7 +4,7 @@
 //Date:October 1, 2014
 //
 //Uses an Arduino, 2 PIR sensors and set of LED lights.
-//This code was written using WS2801 strand of 50 lights
+//This code was written using WS2811 strand of 13 X 2 LED lights
 //
 //Uses FastLED library to talk to LEDS.
 //https://github.com/FastLED/FastLED
